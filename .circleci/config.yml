@@ -1,10 +1,11 @@
-docker-publisher:
-  environment:
-    IMAGE_NAME: deepakkumarbaria07/node-hello-world
-    DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME
-    DOCKERHUB_PASS: $DOCKERHUB_PASS
-  docker:
-    - image: circleci/buildpack-deps:stretch
+version: 2.1
+
+executors:
+  docker-publisher:
+    environment:
+      IMAGE_NAME: deepakkumarbaria07/node-hello-world
+    docker:
+      - image: circleci/buildpack-deps:stretch
 
 jobs:
   build:
@@ -13,16 +14,17 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker image
+          name: Build Docker Image
           command: |
             docker build -t $IMAGE_NAME:latest .
       - run:
-          name: Archive Docker image
-          command: docker save -o image.tar $IMAGE_NAME
+          name: Archive Docker Image
+          command: |
+            docker save -o image.tar $IMAGE_NAME
       - persist_to_workspace:
           root: .
           paths:
-            - ./image.tar
+            - image.tar
 
   publish-latest:
     executor: docker-publisher
@@ -31,8 +33,9 @@ jobs:
           at: /tmp/workspace
       - setup_remote_docker
       - run:
-          name: Load archived Docker image
-          command: docker load -i /tmp/workspace/image.tar
+          name: Load Archived Docker Image
+          command: |
+            docker load -i /tmp/workspace/image.tar
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -41,3 +44,18 @@ jobs:
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
             docker push $IMAGE_NAME:latest
             docker push $IMAGE_NAME:$IMAGE_TAG
+
+workflows:
+  version: 2
+  build-and-publish:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: main
+      - publish-latest:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
