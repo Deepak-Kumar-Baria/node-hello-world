@@ -1,9 +1,10 @@
 version: 2.1
-
 executors:
   docker-publisher:
     environment:
       IMAGE_NAME: deepakkumarbaria07/node-hello-world
+      DOCKERHUB_USERNAME: deepakkumarbaria07
+      DOCKERHUB_PASS: Deepu@0987
     docker:
       - image: circleci/buildpack-deps:stretch
 
