@@ -1,10 +1,11 @@
-version: 2.1
-executors:
-  docker-publisher:
-    environment:
-      IMAGE_NAME: deepakkumarbaria07/node-hello-world
-    docker:
-      - image: circleci/buildpack-deps:stretch
+docker-publisher:
+  environment:
+    IMAGE_NAME: deepakkumarbaria07/node-hello-world
+    DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME
+    DOCKERHUB_PASS: $DOCKERHUB_PASS
+  docker:
+    - image: circleci/buildpack-deps:stretch
+
 jobs:
   build:
     executor: docker-publisher
@@ -22,6 +23,7 @@ jobs:
           root: .
           paths:
             - ./image.tar
+
   publish-latest:
     executor: docker-publisher
     steps:
@@ -39,17 +41,3 @@ jobs:
             docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
             docker push $IMAGE_NAME:latest
             docker push $IMAGE_NAME:$IMAGE_TAG
-workflows:
-  version: 2
-  build-master:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only: main
-      - publish-latest:
-          requires:
-            - build
-          filters:
-            branches:
-              only: main
